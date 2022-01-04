@@ -1,0 +1,19 @@
+---
+- name: "Download logstash's rpm"
+  get_url:
+    url: "https://artifacts.elastic.co/downloads/logstash/logstash-{{ logstash_version }}-x86_64.rpm"
+    dest: "/tmp/logstash-{{ logstash_version }}-x86_64.rpm"
+  register: download_logstash
+  until: download_logstash is succeeded
+- name: Install logstash
+  become: true
+  yum:
+    name: "/tmp/logstash-{{ logstash_version }}-x86_64.rpm"
+    state: present
+- name: Configure logstash
+  become: true
+  template:
+    mode: 0644
+    src: logstash.conf.j2
+    dest: /etc/logstash/conf.d/logstash.conf
+  notify: restart logstash
